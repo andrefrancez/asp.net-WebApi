@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PokemonApp;
 using PokemonApp.Data;
+using PokemonApp.Interfaces;
+using PokemonApp.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddTransient<Seed>();
+builder.Services.AddScoped<IPokemonRepository, PokemonRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -17,20 +20,23 @@ builder.Services.AddDbContext<DataContext>(options => {
 
 var app = builder.Build();
 
-if (args.Length == 1 && args[0].ToLower() == "seeddata")
+if(args.Length == 1 && args[0].ToLower() == "seeddata")
     SeedData(app);
 
-void SeedData(IHost app) {
+void SeedData(IHost app)
+{
     var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
 
-    using (var scope = scopedFactory.CreateScope()) {
+    using(var scope = scopedFactory.CreateScope())
+    {
         var service = scope.ServiceProvider.GetService<Seed>();
         service.SeedDataContext();
     }
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) {
+if(app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
 }
