@@ -12,7 +12,7 @@ namespace PokemonApp.Repository
         {
             _context = context;
         }
-        public bool CategoriesExists(int id)
+        public bool CategoryExists(int id)
         {
             return _context.Categories.Any(c => c.Id == id);
         }
@@ -42,6 +42,12 @@ namespace PokemonApp.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0;
+        }
+
+        public bool UpdateCategory(Category category)
+        {
+            _context.Update(category);
+            return Save();
         }
     }
 }
