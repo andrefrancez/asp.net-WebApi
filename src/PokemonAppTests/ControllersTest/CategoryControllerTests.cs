@@ -25,7 +25,6 @@ namespace PokemonAppTests.ControllersTest
             _controller = new CategoryController(_mockRepository.Object, _mockMapper.Object);
         }
 
-
         [Fact]
         public void GetCategories_ReturnsOkResultWithCategories()
         {
@@ -46,6 +45,30 @@ namespace PokemonAppTests.ControllersTest
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnCategories = Assert.IsAssignableFrom<IEnumerable<CategoryDto>>(okResult.Value);
             Assert.Equal(categories.Count, returnCategories.Count());
+        }
+
+        [Fact]
+        public void GetCategory_ReturnsOkResultWithCategory()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var category = _fixture.Create<Category>();
+
+            _mockRepository.Setup(repository => repository.CategoryExists(It.IsAny<int>())).Returns(true);
+            _mockRepository.Setup(repository => repository.GetCategory(category.Id)).Returns(category);
+            _mockMapper.Setup(mapper => mapper.Map<CategoryDto>(category)).Returns((Category c) => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            });
+
+            var result = _controller.GetCategory(category.Id);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnCategory = Assert.IsAssignableFrom<CategoryDto>(okResult.Value);
+            Assert.Equal(category.Id, returnCategory.Id);
+            Assert.Equal(category.Name, returnCategory.Name);
         }
     }
 }
