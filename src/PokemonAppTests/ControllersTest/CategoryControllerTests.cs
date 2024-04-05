@@ -104,7 +104,6 @@ namespace PokemonAppTests.ControllersTest
             var category = _fixture.Create<Category>();
 
             _mockRepository.Setup(repository => repository.GetCategories()).Returns(new List<Category>());
-            _mockMapper.Setup(mapper => mapper.Map<Category>(categoryCreate)).Returns(category);
             _mockRepository.Setup(repository => repository.CreateCategory(It.IsAny<Category>())).Returns(true);
 
             var result = _controller.CreateCategory(categoryCreate);
@@ -126,10 +125,24 @@ namespace PokemonAppTests.ControllersTest
                 throw new InvalidOperationException("Category ID mismatch");
 
             _mockRepository.Setup(repository => repository.CategoryExists(category.Id)).Returns(true);
-            _mockMapper.Setup(mapper => mapper.Map<Category>(updatedCategory)).Returns(new Category { Id = category.Id });
             _mockRepository.Setup(repository => repository.UpdateCategory(It.IsAny<Category>())).Returns(true);
 
             var result = _controller.UpdateCategory(category.Id, updatedCategory);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public void DeleteCategory_ReturnsNoContentResult()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var category = _fixture.Create<Category>();
+
+            _mockRepository.Setup(repository => repository.CategoryExists(It.IsAny<int>())).Returns(true);
+
+            var result = _controller.DeleteCategory(category.Id);
 
             Assert.IsType<NoContentResult>(result);
         }
