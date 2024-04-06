@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonApp.Dto;
 using PokemonApp.Interfaces;
 using PokemonApp.Models;
-using PokemonApp.Repository;
-using System.Diagnostics.Metrics;
 
 namespace PokemonApp.Controllers
 {
@@ -39,7 +37,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetCountry(int countryId)
         {
             if(!_countryRepository.CountryExists(countryId))
-                return NotFound();
+                return NoContent();
 
             var country = _mapper.Map<CountryDto>(_countryRepository.GetCountry(countryId));
 
@@ -106,7 +104,7 @@ namespace PokemonApp.Controllers
                 return BadRequest(ModelState);
 
             if(!_countryRepository.CountryExists(countryId))
-                return NotFound();
+                return NoContent();
 
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -129,7 +127,7 @@ namespace PokemonApp.Controllers
         public IActionResult DeleteCountry(int countryId)
         {
             if (!_countryRepository.CountryExists(countryId))
-                return NotFound();
+                return NoContent();
 
             var countryDelete = _countryRepository.GetCountry(countryId);
 

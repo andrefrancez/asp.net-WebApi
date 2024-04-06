@@ -39,7 +39,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetOwner(int ownerId)
         {
             if(!_ownerRepository.OwnerExists(ownerId))
-                return NotFound();
+                return NoContent();
                 
             var owner = _mapper.Map<Owner>(_ownerRepository.GetOwner(ownerId));
 
@@ -55,7 +55,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetPokemonByOwner(int ownerId)
         {
             if(!_ownerRepository.OwnerExists(ownerId))
-                return NotFound();
+                return NoContent();
 
             var owner = _mapper.Map<List<PokemonDto>>(_ownerRepository.GetPokemonByOwner(ownerId));
 
@@ -111,7 +111,7 @@ namespace PokemonApp.Controllers
                 return BadRequest(ModelState);
 
             if(!_ownerRepository.OwnerExists(ownerId))
-                return NotFound();
+                return NoContent();
 
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -134,7 +134,7 @@ namespace PokemonApp.Controllers
         public IActionResult DeleteOwner(int ownerId)
         {
             if (!_ownerRepository.OwnerExists(ownerId))
-                return NotFound();
+                return NoContent();
 
             var ownerDelete = _ownerRepository.GetOwner(ownerId);
 

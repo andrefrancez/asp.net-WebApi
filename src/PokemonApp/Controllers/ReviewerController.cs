@@ -38,7 +38,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetReviewer(int reviewerId)
         {
             if(!_reviewerRepository.ReviewerExists(reviewerId))
-                return NotFound();
+                return NoContent();
 
             var reviewer = _mapper.Map<ReviewerDto>(_reviewerRepository.GetReviewer(reviewerId));
 
@@ -52,7 +52,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetReviewsByReviewer(int reviewerId)
         {
             if(!_reviewerRepository.ReviewerExists(reviewerId))
-                return NotFound();
+                return NoContent();
 
             var reviews = _mapper.Map<List<ReviewDto>>(_reviewerRepository.GetReviewsByReviewer(reviewerId));
 
@@ -106,7 +106,7 @@ namespace PokemonApp.Controllers
                 return BadRequest(ModelState);
 
             if(!_reviewerRepository.ReviewerExists(reviewerId))
-                return NotFound();
+                return NoContent();
 
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -129,7 +129,7 @@ namespace PokemonApp.Controllers
         public IActionResult DeleteReviewer(int reviewerId)
         {
             if (!_reviewerRepository.ReviewerExists(reviewerId))
-                return NotFound();
+                return NoContent();
 
             var reviewerDelete = _reviewerRepository.GetReviewer(reviewerId);
 

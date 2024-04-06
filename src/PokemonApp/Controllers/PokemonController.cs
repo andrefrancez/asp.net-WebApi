@@ -40,7 +40,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetPokemon(int pokeId)
         {
             if(!_pokemonRepository.PokemonExists(pokeId))
-                return NotFound();
+                return NoContent();
 
             var pokemon = _mapper.Map<PokemonDto>(_pokemonRepository.GetPokemon(pokeId));
 
@@ -56,7 +56,7 @@ namespace PokemonApp.Controllers
         public IActionResult GetPokemonRating(int pokeId)
         {
             if(!_pokemonRepository.PokemonExists(pokeId))
-                return NotFound();
+                return NoContent();
 
             var rating = _pokemonRepository.GetPokemonRating(pokeId);
 
@@ -110,7 +110,7 @@ namespace PokemonApp.Controllers
                 return BadRequest(ModelState);
 
             if(!_pokemonRepository.PokemonExists(pokeId))
-                return NotFound();
+                return NoContent();
 
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -133,7 +133,7 @@ namespace PokemonApp.Controllers
         public IActionResult DeletePokemon(int pokeId)
         {
             if (!_pokemonRepository.PokemonExists(pokeId))
-                return NotFound();
+                return NoContent();
 
             var pokemonDelete = _pokemonRepository.GetPokemon(pokeId);
             var reviewsToDelete = _reviewRepository.GetReviewsOfAPokemon(pokeId);
