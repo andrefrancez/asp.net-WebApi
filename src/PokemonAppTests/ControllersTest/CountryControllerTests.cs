@@ -88,5 +88,52 @@ namespace PokemonAppTests.ControllersTest
             var result = _controller.GetCountryByOwner(owner.Id);
             Assert.IsType<OkObjectResult>(result);
         }
+
+        [Fact]
+        public void CreateCountry_ReturnsOkResultWithCountry()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var countryDto = _fixture.Create<CountryDto>();
+
+            _mockRepository.Setup(repository => repository.GetCountries()).Returns(new List<Country>());
+            _mockRepository.Setup(repository => repository.CreateCountry(It.IsAny<Country>())).Returns(true);
+
+            var result = _controller.CreateCountry(countryDto);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully created", okResult.Value);
+        }
+
+        [Fact]
+        public void UpdateCountry_ReturnsNoContentResult()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var country = _fixture.Create<Country>();
+            var updatedCountry = _fixture.Build<CountryDto>().With(c => c.Id, country.Id).Create();
+
+            _mockRepository.Setup(repository => repository.CountryExists(country.Id)).Returns(true);
+            _mockRepository.Setup(repository => repository.UpdateCountry(It.IsAny<Country>())).Returns(true);
+
+            var result = _controller.UpdateCountry(country.Id, updatedCountry);
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public void DeleteCountry_ReturnsNoContentResult()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var country = _fixture.Create<Country>();
+
+            _mockRepository.Setup(repository => repository.CountryExists(country.Id)).Returns(true);
+
+            var result = _controller.DeleteCountry(country.Id);
+            Assert.IsType<NoContentResult>(result);
+        }
     }
 }
