@@ -72,7 +72,7 @@ namespace PokemonAppTests.ControllersTest
         }
 
         [Fact]
-        public void GetCategoryByPokemon_ReturnsOkResultsWithCategory()
+        public void GetPokemonByCategory_ReturnsOkResultsWithCategory()
         {
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
