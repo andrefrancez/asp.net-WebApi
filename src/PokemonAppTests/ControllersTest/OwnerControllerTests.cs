@@ -6,6 +6,7 @@ using PokemonApp.Controllers;
 using PokemonApp.Dto;
 using PokemonApp.Interfaces;
 using PokemonApp.Models;
+using System.Diagnostics.Metrics;
 
 namespace PokemonAppTests.ControllersTest
 {
@@ -88,6 +89,36 @@ namespace PokemonAppTests.ControllersTest
 
             var result = _controller.GetPokemonByOwner(owner.Id);
             Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public void UpdateOwner_ReturnsOkResultWithOwner()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var owner = _fixture.Create<Owner>();
+            var ownerUpdate = _fixture.Build<OwnerDto>().With(o => o.Id, owner.Id).Create();
+
+            _mockOwnerRepository.Setup(repository => repository.OwnerExists(owner.Id)).Returns(true);
+            _mockOwnerRepository.Setup(repository => repository.UpdateOwner(It.IsAny<Owner>())).Returns(true);
+
+            var result = _controller.UpdateOwner(owner.Id, ownerUpdate);
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public void DeleteOwner_ReturnsNoContentResultWithOwner()
+        {
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var owner = _fixture.Create<Owner>();
+
+            _mockOwnerRepository.Setup(repository => repository.OwnerExists(owner.Id)).Returns(true);
+
+            var result = _controller.DeleteOwner(owner.Id);
+            Assert.IsType<NoContentResult>(result);
         }
     }
 }
