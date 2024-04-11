@@ -120,5 +120,61 @@ namespace PokemonAppTests.ControllersTest
             var result = _controller.DeleteOwner(owner.Id);
             Assert.IsType<NoContentResult>(result);
         }
+
+        [Fact]
+        public void CreateOwner_ReturnsOkResult()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var ownerRequest = _fixture.Create<OwnerDto>();
+            var ownerQueryReturnList = _fixture.CreateMany<Owner>(2).ToList();
+
+            var ownerMapped = _fixture.Build<Owner>()
+                .With(x => x.Id, ownerRequest.Id)
+                .With(x => x.FirstName, ownerRequest.FirstName)
+                .With(x => x.LastName, ownerRequest.LastName)
+                .With(x => x.Gym, ownerRequest.Gym)
+                .Create();
+
+            _mockOwnerRepository
+                .Setup(x => x.GetOwners())
+                .Returns(ownerQueryReturnList);
+
+            _mockMapper
+                .Setup(x => x.Map<Owner>(ownerRequest))
+                .Returns(ownerMapped);
+
+            _mockCountryRepository
+                .Setup(x => x.GetCountry(ownerRequest.Id))
+                .Returns(_fixture.Create<Country>());
+
+            _mockOwnerRepository
+                .Setup(repository => repository.CreateOwner(ownerMapped))
+                .Returns(true);
+
+            // Act
+
+            var result = _controller.CreateOwner(ownerRequest.Id, ownerRequest);
+
+
+            // Assert
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully created", okResult.Value);
+
+            _mockOwnerRepository
+                .Verify(x => x.GetOwners(), Times.Once);
+            _mockOwnerRepository
+                .Verify(x => x.CreateOwner(ownerMapped), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<Owner>(ownerRequest), Times.Once);
+
+            _mockCountryRepository
+                .Verify(x => x.GetCountry(ownerRequest.Id), Times.Once);
+
+        }
     }
 }
