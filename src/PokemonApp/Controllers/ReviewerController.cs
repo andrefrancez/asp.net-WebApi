@@ -97,7 +97,7 @@ namespace PokemonApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateOwner(int reviewerId, [FromBody] ReviewerDto updatedReviewer)
+        public IActionResult UpdateReviewer(int reviewerId, [FromBody] ReviewerDto updatedReviewer)
         {
             if(updatedReviewer == null)
                 return BadRequest(ModelState);

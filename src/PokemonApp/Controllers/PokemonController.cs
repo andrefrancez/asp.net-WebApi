@@ -101,7 +101,7 @@ namespace PokemonApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateOwner([FromQuery] int ownerId, [FromQuery] int categoryId, int pokeId, [FromBody] PokemonDto updatedPokemon)
+        public IActionResult UpdatePokemon([FromQuery] int ownerId, [FromQuery] int categoryId, int pokeId, [FromBody] PokemonDto updatedPokemon)
         {
             if(updatedPokemon == null)
                 return BadRequest(ModelState);
