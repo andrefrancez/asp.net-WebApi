@@ -110,5 +110,107 @@ namespace PokemonAppTests.ControllersTest
 
             _mockReviewRepo.Verify(x => x.GetReviewsOfAPokemon(pokemon.Id), Times.Once);
         }
+
+        [Fact]
+        public void CreateReview_ReturnsOkResult()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var review = _fixture.Create<ReviewDto>();
+            var reviewMapped = _fixture.Build<Review>()
+                .With(x => x.Id, review.Id)
+                .With(x => x.Title, review.Title)
+                .With(x => x.Text, review.Text)
+                .With(x => x.Rating, review.Rating)
+                .Create();
+            var pokemon = _fixture.Create<Pokemon>();
+            var reviewer = _fixture.Create<Reviewer>();
+
+            _mockReviewRepo.Setup(x => x.GetReviews()).Returns(new List<Review>());
+            _mockMapper.Setup(x => x.Map<Review>(review)).Returns(reviewMapped);
+            _mockPokemonRepo.Setup(x => x.GetPokemon(pokemon.Id)).Returns(pokemon);
+            _mockReviewerRepo.Setup(x => x.GetReviewer(reviewer.Id)).Returns(reviewer);
+            _mockReviewRepo.Setup(x => x.CreateReview(reviewMapped)).Returns(true);
+
+            // Act
+            var result = _controller.CreateReview(pokemon.Id, reviewer.Id, review);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully created", okResult.Value);
+
+            _mockReviewRepo
+                .Verify(x => x.GetReviews(), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<Review>(review), Times.Once);
+
+            _mockPokemonRepo
+                .Verify(x => x.GetPokemon(pokemon.Id), Times.Once);
+
+            _mockReviewerRepo
+                .Verify(x => x.GetReviewer(reviewer.Id), Times.Once);
+
+            _mockReviewRepo
+                .Verify(x => x.CreateReview(reviewMapped), Times.Once);
+        }
+
+        [Fact]
+        public void UpdateReview_ReturnsNoContent()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var review = _fixture.Create<Review>();
+            var reviewUpdate = _fixture.Build<ReviewDto>()
+                .With(r => r.Id, review.Id)
+                .Create();
+
+            _mockReviewRepo.Setup(x => x.ReviewExists(review.Id)).Returns(true);
+            _mockReviewRepo.Setup(x => x.UpdateReview(It.IsAny<Review>())).Returns(true);
+
+            // Act
+            var result = _controller.UpdateReview(review.Id, reviewUpdate);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+
+            _mockReviewRepo
+                .Verify(x => x.ReviewExists(review.Id), Times.Once);
+
+            _mockReviewRepo
+                .Verify(x => x.UpdateReview(It.IsAny<Review>()), Times.Once);
+        }
+
+        [Fact]
+        public void DeleteReview_ReturnsNoContent()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var review = _fixture.Create<Review>();
+
+            _mockReviewRepo.Setup(x => x.ReviewExists(review.Id)).Returns(true);
+            _mockReviewRepo.Setup(x => x.GetReview(review.Id)).Returns(review);
+            _mockReviewRepo.Setup(x => x.DeleteReview(review)).Returns(true);
+            // Act
+            var result = _controller.DeleteReview(review.Id);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+
+            _mockReviewRepo
+                .Verify(x => x.ReviewExists(review.Id), Times.Once);
+
+            _mockReviewRepo
+                .Verify(x => x.GetReview(review.Id), Times.Once);
+
+            _mockReviewRepo
+                .Verify(x => x.DeleteReview(review), Times.Once);
+        }
     }
 }
