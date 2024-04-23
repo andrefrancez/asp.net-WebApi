@@ -112,5 +112,101 @@ namespace PokemonAppTests.ControllersTest
             _mockReviewerRepo
                 .Verify(x => x.GetReviewsByReviewer(reviewer.Id), Times.Once);
         }
+
+        [Fact]
+        public void CreateReviewer_ReturnsOkResult()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var reviewer = _fixture.Create<ReviewerDto>();
+            var reviewerMapped = _fixture.Build<Reviewer>()
+                .With(x => x.Id, reviewer.Id)
+                .With(x => x.FirstName, reviewer.FirstName)
+                .With(x => x.LastName, reviewer.LastName)
+                .Create();
+
+            _mockReviewerRepo.Setup(x => x.GetReviewers()).Returns(new List<Reviewer>());
+            _mockMapper.Setup(x => x.Map<Reviewer>(reviewer)).Returns(reviewerMapped);
+            _mockReviewerRepo.Setup(x => x.CreateReviewer(reviewerMapped)).Returns(true);
+
+            // Act
+            var result = _controller.CreateReviewer(reviewer);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully created", okResult.Value);
+
+            _mockReviewerRepo
+                .Verify(x => x.GetReviewers(), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<Reviewer>(reviewer), Times.Once);
+
+            _mockReviewerRepo
+                .Verify(x => x.CreateReviewer(reviewerMapped), Times.Once);
+        }
+
+        [Fact]
+        public void UpdateReviewer_ReturnsNoContent()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var reviewer = _fixture.Create<Reviewer>();
+            var reviewerUpdate = _fixture.Build<ReviewerDto>()
+                .With(r => r.Id, reviewer.Id)
+                .Create();
+
+            _mockReviewerRepo.Setup(x => x.ReviewerExists(reviewer.Id)).Returns(true);
+            _mockMapper.Setup(x => x.Map<Reviewer>(reviewerUpdate)).Returns(reviewer);
+            _mockReviewerRepo.Setup(x => x.UpdateReviewer(It.IsAny<Reviewer>())).Returns(true);
+
+            // Act
+            var result = _controller.UpdateReviewer(reviewer.Id, reviewerUpdate);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+
+            _mockReviewerRepo
+                .Verify(x => x.ReviewerExists(reviewer.Id), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<Reviewer>(reviewerUpdate), Times.Once);
+
+            _mockReviewerRepo
+                .Verify(x => x.UpdateReviewer(It.IsAny<Reviewer>()), Times.Once);
+        }
+
+        [Fact]
+        public void DeleteReviewer_ReturnsNoContent()
+        {
+            // Arrange
+            _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var reviewer = _fixture.Create<Reviewer>();
+
+            _mockReviewerRepo.Setup(x => x.ReviewerExists(reviewer.Id)).Returns(true);
+            _mockReviewerRepo.Setup(x => x.GetReviewer(reviewer.Id)).Returns(reviewer);
+            _mockReviewerRepo.Setup(x => x.DeleteReviewer(reviewer)).Returns(true);
+
+            // Act
+            var result = _controller.DeleteReviewer(reviewer.Id);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+
+            _mockReviewerRepo
+                .Verify(x => x.ReviewerExists(reviewer.Id), Times.Once);
+
+            _mockReviewerRepo
+                .Verify(x => x.GetReviewer(reviewer.Id), Times.Once);
+
+            _mockReviewerRepo
+                .Verify(x => x.DeleteReviewer(reviewer), Times.Once);
+        }
     }
 }
