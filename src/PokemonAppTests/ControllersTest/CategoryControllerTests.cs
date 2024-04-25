@@ -13,138 +13,200 @@ namespace PokemonAppTests.ControllersTest
     {
 
         private CategoryController _controller;
-        private Mock<ICategoryRepository> _mockRepository;
+        private Mock<ICategoryRepository> _mockCategoryRepo;
         private Mock<IMapper> _mockMapper;
         private Fixture _fixture;
 
         public CategoryControllerTests()
         {
-            _mockRepository = new Mock<ICategoryRepository>();
+            _mockCategoryRepo = new Mock<ICategoryRepository>();
             _mockMapper = new Mock<IMapper>();
             _fixture = new Fixture();
-            _controller = new CategoryController(_mockRepository.Object, _mockMapper.Object);
+            _controller = new CategoryController(_mockCategoryRepo.Object, _mockMapper.Object);
         }
 
         [Fact]
-        public void GetCategories_ReturnsOkResultWithCategories()
+        public void GetCategories_ReturnsOkResult()
         {
+            // Arrange
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             var categories = _fixture.CreateMany<Category>().ToList();
 
-            _mockRepository.Setup(repository => repository.GetCategories()).Returns(categories);
-            _mockMapper.Setup(mapper => mapper.Map<List<CategoryDto>>(categories)).Returns(categories.Select(c => new CategoryDto 
+            _mockCategoryRepo.Setup(x => x.GetCategories()).Returns(categories);
+            _mockMapper.Setup(x => x.Map<List<CategoryDto>>(categories)).Returns(categories.Select(c => new CategoryDto 
             { 
                 Id = c.Id,
                 Name = c.Name 
             }).ToList());
 
+            // Act
             var result = _controller.GetCategories();
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnCategories = Assert.IsAssignableFrom<IEnumerable<CategoryDto>>(okResult.Value);
-            Assert.Equal(categories.Count, returnCategories.Count());
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+
+            _mockCategoryRepo
+                .Verify(x => x.GetCategories(), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<List<CategoryDto>>(categories), Times.Once);
         }
 
         [Fact]
-        public void GetCategory_ReturnsOkResultWithCategory()
+        public void GetCategory_ReturnsOkResult()
         {
+            // Arrange
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             var category = _fixture.Create<Category>();
 
-            _mockRepository.Setup(repository => repository.CategoryExists(It.IsAny<int>())).Returns(true);
-            _mockRepository.Setup(repository => repository.GetCategory(category.Id)).Returns(category);
-            _mockMapper.Setup(mapper => mapper.Map<CategoryDto>(category)).Returns((Category c) => new CategoryDto
+            _mockCategoryRepo.Setup(x => x.CategoryExists(category.Id)).Returns(true);
+            _mockCategoryRepo.Setup(x => x.GetCategory(category.Id)).Returns(category);
+            _mockMapper.Setup(x => x.Map<CategoryDto>(category)).Returns((Category c) => new CategoryDto
             {
                 Id = c.Id,
                 Name = c.Name
             });
 
+            // Act
             var result = _controller.GetCategory(category.Id);
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnCategory = Assert.IsAssignableFrom<CategoryDto>(okResult.Value);
-            Assert.Equal(category.Id, returnCategory.Id);
-            Assert.Equal(category.Name, returnCategory.Name);
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+
+            _mockCategoryRepo
+                .Verify(x => x.CategoryExists(category.Id), Times.Once);
+
+            _mockCategoryRepo
+                .Verify(x => x.GetCategory(category.Id), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<CategoryDto>(category), Times.Once);
         }
 
         [Fact]
-        public void GetPokemonByCategory_ReturnsOkResultsWithCategory()
+        public void GetPokemonByCategory_ReturnsOkResult()
         {
+            // Arrange
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             var category = _fixture.Create<Category>();
             var pokemons = _fixture.CreateMany<Pokemon>().ToList();
 
-            _mockRepository.Setup(repository => repository.GetPokemonByCategory(category.Id)).Returns(pokemons);
-            _mockMapper.Setup(mapper => mapper.Map<List<PokemonDto>>(pokemons)).Returns(pokemons.Select(p => new PokemonDto
+            _mockCategoryRepo.Setup(x => x.GetPokemonByCategory(category.Id)).Returns(pokemons);
+            _mockMapper.Setup(x => x.Map<List<PokemonDto>>(pokemons)).Returns(pokemons.Select(p => new PokemonDto
             {
                 Id = p.Id,
                 Name = p.Name,
                 BirthDate = p.BirthDate,
             }).ToList());
 
+            // Act
             var result = _controller.GetPokemonByCategory(category.Id);
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnPokemons = Assert.IsAssignableFrom<IEnumerable<PokemonDto>>(okResult.Value);
-            Assert.Equal(pokemons.Count, returnPokemons.Count());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+
+            _mockCategoryRepo
+                .Verify(x => x.GetPokemonByCategory(category.Id), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<List<PokemonDto>>(pokemons), Times.Once);
         }
 
         [Fact]
-        public void CreateCategory_ReturnsOkResultWithCategory()
+        public void CreateCategory_ReturnsCreatedResult()
         {
+            // Arrange
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-            var categoryCreate = _fixture.Create<CategoryDto>();
-            var category = _fixture.Create<Category>();
+            var category = _fixture.Create<CategoryDto>();
+            var categoryMapped = _fixture.Build<Category>()
+                .With(c => c.Id, category.Id)
+                .With(c => c.Name, category.Name)
+                .Create();
 
-            _mockRepository.Setup(repository => repository.GetCategories()).Returns(new List<Category>());
-            _mockRepository.Setup(repository => repository.CreateCategory(It.IsAny<Category>())).Returns(true);
+            _mockCategoryRepo.Setup(x => x.GetCategories()).Returns(new List<Category>());
+            _mockMapper.Setup(x => x.Map<Category>(category)).Returns(categoryMapped);
+            _mockCategoryRepo.Setup(x => x.CreateCategory(categoryMapped)).Returns(true);
 
-            var result = _controller.CreateCategory(categoryCreate);
+            //Act
+            var result = _controller.CreateCategory(category);
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Successfully created", okResult.Value);
+            // Assert
+            Assert.IsType<CreatedResult>(result);
+
+            _mockCategoryRepo
+                .Verify(x => x.GetCategories(), Times.Once);
+
+            _mockCategoryRepo
+                .Verify(x => x.CreateCategory(categoryMapped), Times.Once);
         }
 
         [Fact]
-        public void UpdateCategory_ReturnsNoContentResult()
+        public void UpdateCategory_ReturnsNoContent()
         {
+            // Arrange
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             var category = _fixture.Create<Category>();
-            var updatedCategory = _fixture.Build<CategoryDto>().With(cd => cd.Id, category.Id).Create();
+            var categoryUpdate = _fixture.Build<CategoryDto>()
+                .With(cd => cd.Id, category.Id)
+                .Create();
 
-            if (category.Id != updatedCategory.Id)
-                throw new InvalidOperationException("Category ID mismatch");
+            _mockCategoryRepo.Setup(x => x.CategoryExists(category.Id)).Returns(true);
+            _mockMapper.Setup(x => x.Map<Category>(categoryUpdate)).Returns(category);
+            _mockCategoryRepo.Setup(x => x.UpdateCategory(It.IsAny<Category>())).Returns(true);
 
-            _mockRepository.Setup(repository => repository.CategoryExists(category.Id)).Returns(true);
-            _mockRepository.Setup(repository => repository.UpdateCategory(It.IsAny<Category>())).Returns(true);
+            // Act
+            var result = _controller.UpdateCategory(category.Id, categoryUpdate);
 
-            var result = _controller.UpdateCategory(category.Id, updatedCategory);
-
+            // Assert
             Assert.IsType<NoContentResult>(result);
+
+            _mockCategoryRepo
+                .Verify(x => x.CategoryExists(category.Id), Times.Once);
+
+            _mockMapper
+                .Verify(x => x.Map<Category>(categoryUpdate), Times.Once);
+
+            _mockCategoryRepo
+                .Verify(x => x.UpdateCategory(It.IsAny<Category>()), Times.Once);
         }
 
         [Fact]
-        public void DeleteCategory_ReturnsNoContentResult()
+        public void DeleteCategory_ReturnsNoContent()
         {
+            // Arrange
             _fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             var category = _fixture.Create<Category>();
 
-            _mockRepository.Setup(repository => repository.CategoryExists(It.IsAny<int>())).Returns(true);
+            _mockCategoryRepo.Setup(x => x.CategoryExists(category.Id)).Returns(true);
+            _mockCategoryRepo.Setup(x => x.GetCategory(category.Id)).Returns(category);
+            _mockCategoryRepo.Setup(x => x.DeleteCategory(category)).Returns(true);
 
+            // Act
             var result = _controller.DeleteCategory(category.Id);
 
+            // Assert
             Assert.IsType<NoContentResult>(result);
+
+            _mockCategoryRepo
+                .Verify(x => x.CategoryExists(category.Id), Times.Once);
+
+            _mockCategoryRepo
+                .Verify(x => x.GetCategory(category.Id), Times.Once);
+
+            _mockCategoryRepo
+                .Verify(x => x.DeleteCategory(category), Times.Once);
         }
     }
 }

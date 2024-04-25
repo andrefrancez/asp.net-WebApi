@@ -88,7 +88,7 @@ namespace PokemonApp.Controllers
                 return StatusCode(500, ModelState);
             }
 
-            return Ok("Successfully created");
+            return Created("Successfully created", categoryMap);
         }
 
         [HttpPut("{categoryId}")]
