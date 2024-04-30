@@ -41,7 +41,7 @@ namespace PokemonApp.Controllers
             if(!_ownerRepository.OwnerExists(ownerId))
                 return NoContent();
                 
-            var owner = _mapper.Map<Owner>(_ownerRepository.GetOwner(ownerId));
+            var owner = _mapper.Map<OwnerDto>(_ownerRepository.GetOwner(ownerId));
 
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -95,7 +95,7 @@ namespace PokemonApp.Controllers
                 return StatusCode(500, ModelState);
             }
 
-            return Ok("Successfully created");
+            return Created("Successfully created", ownerMap);
         }
 
         [HttpPut("{ownerId}")]
