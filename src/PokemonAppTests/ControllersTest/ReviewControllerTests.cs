@@ -138,8 +138,7 @@ namespace PokemonAppTests.ControllersTest
             var result = _controller.CreateReview(pokemon.Id, reviewer.Id, review);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Successfully created", okResult.Value);
+            Assert.IsType<CreatedResult>(result);
 
             _mockReviewRepo
                 .Verify(x => x.GetReviews(), Times.Once);

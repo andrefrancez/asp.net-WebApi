@@ -1,7 +1,5 @@
 ﻿using AutoFixture;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PokemonApp.Controllers;
@@ -135,9 +133,7 @@ namespace PokemonAppTests.ControllersTest
             var result = _controller.CreatePokemon(owner.Id, category.Id, pokemonDto);
 
             // Assert
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Successfully created", okResult.Value);
+            Assert.IsType<CreatedResult>(result);
 
             _mockPokemonRepo
                 .Verify(x => x.GetPokemons(), Times.Once);
@@ -195,7 +191,7 @@ namespace PokemonAppTests.ControllersTest
             Assert.IsType<NoContentResult>(result);
 
             _mockPokemonRepo
-                .Verify(x => x.PokemonExists(pokemon.Id), Times.Once);
+                 .Verify(x => x.PokemonExists(pokemon.Id), Times.Once);
             _mockPokemonRepo
                 .Verify(x => x.DeletePokemon(It.IsAny<Pokemon>()), Times.Once);
             _mockReviewRepo
